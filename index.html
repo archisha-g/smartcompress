@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>SmartCompress FS &mdash; Intelligent Disk Compression</title>
+  <meta name="description" content="SmartCompress FS automatically compresses your least-used files when disk space runs low. Lossless, intelligent, automatic."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:       #0d1117;
+      --s1:       #161b22;
+      --s2:       #21262d;
+      --s3:       #2d333b;
+      --border:   rgba(255,255,255,.08);
+      --borderlo: rgba(255,255,255,.05);
+      --accent:   #2f81f7;
+      --accenthv: #1a6de0;
+      --accentdim:rgba(47,129,247,.12);
+      --green:    #3fb950;
+      --greendim: rgba(63,185,80,.12);
+      --amber:    #cca72c;
+      --red:      #f85149;
+      --text:     #e6edf3;
+      --muted:    #8b949e;
+      --dim:      #6e7681;
+      --r:        8px;
+      --rl:       12px;
+      --mono:     'Consolas','SF Mono','Fira Code',monospace;
+    }
+    html{scroll-behavior:smooth}
+    body{
+      font-family:'Inter',system-ui,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      overflow-x:hidden;
+      line-height:1.6;
+      font-size:15px;
+      background-image:radial-gradient(circle,rgba(255,255,255,.022) 1px,transparent 1px);
+      background-size:28px 28px;
+    }
+    a{color:var(--accent);text-decoration:none}
+    code{font-family:var(--mono);font-size:.86em;color:var(--muted);background:var(--s2);padding:1px 5px;border-radius:4px;border:1px solid var(--borderlo)}
+    ::-webkit-scrollbar{width:5px}
+    ::-webkit-scrollbar-track{background:var(--bg)}
+    ::-webkit-scrollbar-thumb{background:var(--s3);border-radius:3px}
+
+    /* NAV */
+    nav{
+      position:fixed;top:0;left:0;right:0;z-index:100;
+      height:58px;display:flex;align-items:center;justify-content:space-between;
+      padding:0 40px;
+      background:rgba(13,17,23,.92);
+      backdrop-filter:blur(12px);
+      border-bottom:1px solid var(--border);
+    }
+    .nav-logo{font-weight:700;font-size:.97rem;color:var(--text);letter-spacing:-.3px;display:flex;align-items:center;gap:8px}
+    .nav-logo-mark{width:20px;height:20px;background:var(--accent);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;color:#fff;flex-shrink:0}
+    .nav-links{display:flex;align-items:center;gap:24px}
+    .nav-links a{color:var(--muted);font-size:.88rem;font-weight:500;transition:color .15s}
+    .nav-links a:hover{color:var(--text)}
+    .nav-btn{background:var(--accent);color:#fff!important;padding:7px 16px;border-radius:6px;font-weight:600;font-size:.85rem;transition:background .15s,transform .15s}
+    .nav-btn:hover{background:var(--accenthv);transform:translateY(-1px)}
+
+    /* HERO */
+    #hero{min-height:100vh;display:flex;align-items:center;padding:100px 40px 80px}
+    .hero-inner{max-width:1160px;margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+    .hero-tag{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:.76rem;font-weight:600;color:var(--muted);margin-bottom:20px}
+    .tag-dot{width:6px;height:6px;background:var(--green);border-radius:50%}
+    h1{font-size:clamp(1.9rem,3.8vw,3rem);font-weight:800;line-height:1.12;letter-spacing:-1.5px;margin-bottom:18px;color:var(--text)}
+    h1 em{font-style:normal;color:var(--accent)}
+    .hero-sub{color:var(--muted);font-size:1rem;line-height:1.8;max-width:440px;margin-bottom:32px}
+    .hero-btns{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:44px}
+    .btn-p{display:inline-flex;align-items:center;gap:7px;background:var(--accent);color:#fff;padding:11px 20px;border-radius:6px;font-weight:600;font-size:.92rem;border:1px solid rgba(0,0,0,.15);transition:background .15s,transform .15s,box-shadow .15s}
+    .btn-p:hover{background:var(--accenthv);color:#fff;transform:translateY(-1px);box-shadow:0 4px 14px rgba(47,129,247,.22)}
+    .btn-g{display:inline-flex;align-items:center;gap:7px;background:transparent;color:var(--text);padding:11px 20px;border-radius:6px;font-weight:500;font-size:.92rem;border:1px solid var(--border);transition:background .15s,border-color .15s,transform .15s}
+    .btn-g:hover{background:var(--s1);border-color:rgba(255,255,255,.15);color:var(--text);transform:translateY(-1px)}
+    .hero-stats{display:flex;gap:32px;padding-top:28px;border-top:1px solid var(--border)}
+    .hstat-val{font-size:1.55rem;font-weight:800;letter-spacing:-1px;color:var(--text)}
+    .hstat-desc{font-size:.76rem;color:var(--dim);margin-top:3px}
+
+    /* PRODUCT PANEL */
+    .product-panel{
+      background:var(--s1);
+      border:1px solid var(--border);
+      border-radius:var(--rl);
+      overflow:hidden;
+      box-shadow:0 20px 60px rgba(0,0,0,.55),0 1px 0 rgba(255,255,255,.04) inset;
+    }
+    .pp-chrome{
+      background:var(--s2);border-bottom:1px solid var(--border);
+      padding:11px 15px;display:flex;align-items:center;gap:10px;
+    }
+    .pp-dots{display:flex;gap:5px}
+    .pp-dot{width:11px;height:11px;border-radius:50%;opacity:.75}
+    .pp-dot.r{background:#f85149}.pp-dot.y{background:#cca72c}.pp-dot.g{background:#3fb950}
+    .pp-title{font-size:.78rem;color:var(--dim);font-weight:500;margin-left:4px}
+    .pp-status{margin-left:auto;font-size:.7rem;font-weight:600;padding:2px 8px;border-radius:10px;background:var(--greendim);color:var(--green);border:1px solid rgba(63,185,80,.18)}
+    /* 3-column grid: input | engine | output */
+    .pp-grid{display:grid;grid-template-columns:1fr 44px 1fr}
+    .pp-col{padding:14px}
+    .pp-col-head{font-size:.68rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--dim);margin-bottom:4px}
+    .pp-col-meta{font-size:.73rem;color:var(--dim);padding-bottom:9px;margin-bottom:9px;border-bottom:1px solid var(--borderlo)}
+    .pp-col-meta b{color:var(--muted)}
+    /* file row */
+    .fi{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--borderlo)}
+    .fi:last-child{border-bottom:none}
+    .fi-ext{font-size:.61rem;font-weight:700;padding:2px 4px;border-radius:3px;text-transform:uppercase;flex-shrink:0;letter-spacing:.3px;font-family:var(--mono)}
+    .fi-ext.mp4{background:rgba(248,81,73,.1);color:#f85149}
+    .fi-ext.tar{background:rgba(210,167,44,.1);color:#cca72c}
+    .fi-ext.zip{background:rgba(47,129,247,.1);color:var(--accent)}
+    .fi-ext.csv{background:rgba(63,185,80,.1);color:var(--green)}
+    .fi-ext.txt{background:var(--s3);color:var(--muted)}
+    .fi-ext.gz{background:rgba(47,129,247,.08);color:var(--accent);opacity:.8}
+    .fi-body{flex:1;min-width:0}
+    .fi-name{font-size:.76rem;font-weight:500;color:var(--text);font-family:var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3}
+    .fi-sub{font-size:.68rem;color:var(--dim);margin-top:1px}
+    .fi-sz{font-size:.73rem;font-weight:600;color:var(--muted);font-family:var(--mono);flex-shrink:0}
+    /* output-specific */
+    .fo{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--borderlo)}
+    .fo:last-child{border-bottom:none}
+    .fo-body{flex:1;min-width:0}
+    .fo-name{font-size:.73rem;color:var(--muted);font-family:var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3}
+    .fo-stats{text-align:right;flex-shrink:0}
+    .fo-sz{font-size:.73rem;font-weight:700;color:var(--text);display:block;font-family:var(--mono)}
+    .fo-ratio{font-size:.67rem;color:var(--green);font-weight:600}
+    /* engine column */
+    .pp-engine{
+      border-left:1px solid var(--borderlo);
+      border-right:1px solid var(--borderlo);
+      background:rgba(0,0,0,.12);
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      gap:8px;padding:10px 0;
+    }
+    .eng-arrow{font-size:.7rem;color:var(--dim);line-height:1}
+    .eng-word{font-size:.56rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--dim);writing-mode:vertical-rl;text-orientation:mixed}
+    .eng-divider{width:1px;height:14px;background:var(--borderlo)}
+    /* footer */
+    .pp-footer{border-top:1px solid var(--border);padding:11px 14px;background:rgba(0,0,0,.12)}
+    .pp-footer-label{font-size:.67rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--dim);margin-bottom:8px}
+    .disk-rows{display:flex;flex-direction:column;gap:5px}
+    .disk-row{display:flex;align-items:center;gap:8px}
+    .dr-label{font-size:.68rem;color:var(--dim);width:36px;flex-shrink:0}
+    .dr-bar{flex:1;height:4px;background:var(--s3);border-radius:2px;overflow:hidden}
+    .dr-fill{height:100%;border-radius:2px}
+    .dr-fill.danger{background:var(--red)}
+    .dr-fill.safe{background:var(--accent)}
+    .dr-val{font-size:.68rem;font-weight:700;font-family:var(--mono);width:48px;text-align:right;flex-shrink:0}
+    .dr-val.danger{color:var(--red)}.dr-val.safe{color:var(--accent)}
+    .pp-footer-stats{display:flex;gap:16px;margin-top:10px;padding-top:8px;border-top:1px solid var(--borderlo)}
+    .pfs{display:flex;flex-direction:column}
+    .pfs-val{font-size:.82rem;font-weight:700;font-family:var(--mono);color:var(--text)}
+    .pfs-val.pos{color:var(--green)}
+    .pfs-key{font-size:.67rem;color:var(--dim)}
+
+    /* SECTIONS */
+    section{padding:88px 40px}
+    .container{max-width:1160px;margin:0 auto}
+    .sec-ey{font-size:.72rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);margin-bottom:10px}
+    .sec-h{font-size:clamp(1.55rem,2.6vw,2.2rem);font-weight:800;letter-spacing:-1px;margin-bottom:12px;color:var(--text)}
+    .sec-sub{color:var(--muted);font-size:.95rem;max-width:500px;line-height:1.78}
+
+    /* FEATURES */
+    #features{background:var(--s1);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+    .feat-grid{
+      display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+      gap:1px;margin-top:44px;
+      border:1px solid var(--border);border-radius:var(--rl);overflow:hidden;
+      background:var(--border);
+    }
+    .feat-card{background:var(--s1);padding:26px;transition:background .2s}
+    .feat-card:hover{background:var(--s2)}
+    .feat-ic{font-size:1.1rem;margin-bottom:14px;opacity:.8}
+    .feat-card h3{font-size:.93rem;font-weight:700;margin-bottom:7px;color:var(--text)}
+    .feat-card p{color:var(--muted);font-size:.85rem;line-height:1.68}
+
+    /* DEMO */
+    #demo{background:var(--bg)}
+    .demo-wrap{margin-top:44px;background:var(--s1);border:1px solid var(--border);border-radius:var(--rl);overflow:hidden}
+    .demo-bar{background:var(--s2);padding:11px 16px;display:flex;align-items:center;gap:7px;border-bottom:1px solid var(--border)}
+    .demo-bar-title{margin-left:6px;font-size:.78rem;color:var(--dim);font-weight:500}
+    .demo-body{padding:24px;display:grid;grid-template-columns:176px 1fr;gap:28px}
+    .dl h4,.dr h4{font-size:.68rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--dim);margin-bottom:11px}
+    /* disk ring */
+    .dv-wrap{position:relative;width:132px;height:132px;margin:0 auto 10px}
+    .dv-svg{width:100%;height:100%;transform:rotate(-90deg)}
+    .dv-track{fill:none;stroke:var(--s3);stroke-width:9}
+    .dv-fill{fill:none;stroke-width:9;stroke-linecap:round;stroke-dasharray:352;transition:stroke-dashoffset 1.4s cubic-bezier(.4,0,.2,1),stroke .7s}
+    .dv-text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+    .dv-pct{font-size:1.6rem;font-weight:800}
+    .dv-sub{font-size:.67rem;color:var(--dim)}
+    .dv-info{display:flex;justify-content:space-between;font-size:.72rem;color:var(--dim);width:132px;margin:0 auto}
+    .dv-results{margin-top:12px;padding:10px;background:var(--s2);border-radius:6px;border:1px solid var(--border);display:none}
+    .dv-results.show{display:block}
+    .dv-rlabel{font-size:.67rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--dim);margin-bottom:7px}
+    .dv-rrow{display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:3px}
+    .dv-rrow span:first-child{color:var(--dim)}
+    .dv-rrow span:last-child{font-weight:600;font-family:var(--mono)}
+    .dv-rrow.pos span:last-child{color:var(--green)}
+    /* file list */
+    .dfl{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+    .dfr{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--s2);border:1px solid var(--border);border-radius:6px;font-size:.8rem;transition:all .4s}
+    .dfr.compressing{border-color:rgba(47,129,247,.28);background:rgba(47,129,247,.05)}
+    .dfr.compressed{opacity:.38}
+    .dfr-name{flex:1;font-weight:500;font-family:var(--mono);font-size:.76rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .dfr-sz{color:var(--dim);font-size:.72rem;font-family:var(--mono);flex-shrink:0}
+    .dbadge{font-size:.66rem;padding:2px 7px;border-radius:10px;font-weight:600;flex-shrink:0}
+    .dbq{background:rgba(204,167,44,.1);color:var(--amber)}
+    .dbc{background:var(--accentdim);color:var(--accent)}
+    .dbd{background:var(--greendim);color:var(--green)}
+    .d-run{width:100%;padding:9px;border:none;border-radius:6px;cursor:pointer;font-family:'Inter',sans-serif;font-size:.88rem;font-weight:600;background:var(--accent);color:#fff;transition:background .15s,transform .15s}
+    .d-run:hover{background:var(--accenthv);transform:translateY(-1px)}
+    .d-run:disabled{opacity:.4;cursor:not-allowed;transform:none}
+    .d-log{margin-top:10px;background:var(--bg);border-radius:5px;padding:9px 12px;font-family:var(--mono);font-size:.73rem;color:var(--dim);height:68px;overflow-y:auto;border:1px solid var(--border)}
+    .dl-ln{margin-bottom:2px;line-height:1.5}
+    .dl-info{color:var(--accent)}.dl-ok{color:var(--green)}.dl-warn{color:var(--amber)}
+
+    /* HOW */
+    #how{background:var(--s1);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+    .how-grid{
+      display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+      gap:1px;margin-top:44px;
+      border:1px solid var(--border);border-radius:var(--rl);overflow:hidden;
+      background:var(--border);
+    }
+    .how-step{background:var(--s1);padding:26px;transition:background .2s}
+    .how-step:hover{background:var(--s2)}
+    .how-n{font-size:.72rem;font-weight:700;color:var(--accent);margin-bottom:14px;font-family:var(--mono)}
+    .how-step h3{font-size:.92rem;font-weight:700;margin-bottom:7px;color:var(--text)}
+    .how-step p{color:var(--muted);font-size:.84rem;line-height:1.68}
+
+    /* TECH */
+    #tech{background:var(--bg)}
+    .tech-pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:32px}
+    .tpill{display:flex;align-items:center;gap:6px;background:var(--s1);border:1px solid var(--border);border-radius:6px;padding:7px 14px;font-weight:500;font-size:.83rem;color:var(--text);transition:background .15s,border-color .15s}
+    .tpill:hover{background:var(--s2);border-color:rgba(255,255,255,.13)}
+
+    /* DOWNLOAD */
+    #download{background:var(--s1);border-top:1px solid var(--border)}
+    .dl-wrap{max-width:580px;margin:0 auto;text-align:center}
+    .dl-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+    .btn-dl{display:inline-flex;align-items:center;gap:9px;background:var(--accent);color:#fff;padding:13px 26px;border-radius:6px;font-weight:700;font-size:.97rem;border:1px solid rgba(0,0,0,.15);transition:background .15s,transform .15s,box-shadow .15s}
+    .btn-dl:hover{background:var(--accenthv);color:#fff;transform:translateY(-2px);box-shadow:0 6px 18px rgba(47,129,247,.22)}
+    .dl-note{margin-top:14px;font-size:.78rem;color:var(--dim)}
+
+    /* FOOTER */
+    footer{padding:28px 40px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+    footer p{font-size:.82rem;color:var(--dim)}
+    footer a{color:var(--dim);transition:color .15s}
+    footer a:hover{color:var(--text)}
+
+    /* REVEAL */
+    .reveal{opacity:0;transform:translateY(18px);transition:opacity .55s ease,transform .55s ease}
+    .reveal.visible{opacity:1;transform:none}
+
+    /* RESPONSIVE */
+    @media(max-width:900px){
+      nav{padding:0 18px}.nav-links a:not(.nav-btn){display:none}
+      #hero{padding:88px 20px 56px}
+      .hero-inner{grid-template-columns:1fr;gap:36px}
+      .product-panel{order:-1}
+      section{padding:60px 20px}
+      .demo-body{grid-template-columns:1fr;gap:18px}
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">
+    <div class="nav-logo-mark">S</div>
+    SmartCompress FS
+  </div>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#demo">Demo</a>
+    <a href="#how">How It Works</a>
+    <a href="#tech">Stack</a>
+    <a href="#download" class="nav-btn">Download</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-inner">
+    <!-- Left copy -->
+    <div>
+      <div class="hero-tag"><span class="tag-dot"></span>v1.0 &nbsp;&middot;&nbsp; Windows</div>
+      <h1>Intelligent disk<br>compression.<br><em>Automatic.</em></h1>
+      <p class="hero-sub">
+        SmartCompress FS monitors available disk space and automatically compresses your least-used files before storage runs out &mdash; losslessly, intelligently, with full restoration support.
+      </p>
+      <div class="hero-btns">
+        <a href="#download" class="btn-p" id="hero-dl">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download for Windows
+        </a>
+        <a href="https://github.com/YOUR-USERNAME/smartcompress-fs" target="_blank" class="btn-g" id="hero-gh">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          View on GitHub
+        </a>
+      </div>
+      <div class="hero-stats">
+        <div><div class="hstat-val">~60%</div><div class="hstat-desc">Avg. compression ratio</div></div>
+        <div><div class="hstat-val">2</div><div class="hstat-desc">Algorithms &mdash; Gzip &amp; Zlib</div></div>
+        <div><div class="hstat-val">0</div><div class="hstat-desc">Data loss &mdash; fully lossless</div></div>
+      </div>
+    </div>
+
+    <!-- Right: product panel -->
+    <div class="product-panel">
+      <div class="pp-chrome">
+        <div class="pp-dots"><div class="pp-dot r"></div><div class="pp-dot y"></div><div class="pp-dot g"></div></div>
+        <span class="pp-title">SmartCompress FS</span>
+        <span class="pp-status">&#9679; Active</span>
+      </div>
+
+      <div class="pp-grid">
+        <!-- Input queue -->
+        <div class="pp-col">
+          <div class="pp-col-head">Input Queue</div>
+          <div class="pp-col-meta">5 files &nbsp;&middot;&nbsp; <b>2.89 GB</b> total &nbsp;&middot;&nbsp; Disk at 87%</div>
+
+          <div class="fi">
+            <span class="fi-ext mp4">MP4</span>
+            <div class="fi-body"><div class="fi-name">lecture_rec.mp4</div><div class="fi-sub">14 days since accessed</div></div>
+            <span class="fi-sz">1.2 GB</span>
+          </div>
+          <div class="fi">
+            <span class="fi-ext tar">TAR</span>
+            <div class="fi-body"><div class="fi-name">backup_old.tar</div><div class="fi-sub">30 days since accessed</div></div>
+            <span class="fi-sz">890 MB</span>
+          </div>
+          <div class="fi">
+            <span class="fi-ext zip">ZIP</span>
+            <div class="fi-body"><div class="fi-name">raw_photos.zip</div><div class="fi-sub">22 days since accessed</div></div>
+            <span class="fi-sz">540 MB</span>
+          </div>
+          <div class="fi">
+            <span class="fi-ext csv">CSV</span>
+            <div class="fi-body"><div class="fi-name">dataset.csv</div><div class="fi-sub">8 days since accessed</div></div>
+            <span class="fi-sz">210 MB</span>
+          </div>
+          <div class="fi">
+            <span class="fi-ext txt">TXT</span>
+            <div class="fi-body"><div class="fi-name">notes.txt</div><div class="fi-sub">3 days since accessed</div></div>
+            <span class="fi-sz">48 MB</span>
+          </div>
+        </div>
+
+        <!-- Engine -->
+        <div class="pp-engine">
+          <span class="eng-arrow">&#9660;</span>
+          <span class="eng-word">Gzip</span>
+          <div class="eng-divider"></div>
+          <span class="eng-word">Zlib</span>
+          <span class="eng-arrow">&#9660;</span>
+        </div>
+
+        <!-- Output -->
+        <div class="pp-col">
+          <div class="pp-col-head">Output</div>
+          <div class="pp-col-meta">Lossless &nbsp;&middot;&nbsp; <b>Metadata saved</b></div>
+
+          <div class="fo">
+            <span class="fi-ext gz">GZ</span>
+            <div class="fo-body"><div class="fo-name">lecture_rec.mp4.gz</div></div>
+            <div class="fo-stats"><span class="fo-sz">456 MB</span><span class="fo-ratio">&#8595; 62%</span></div>
+          </div>
+          <div class="fo">
+            <span class="fi-ext gz">GZ</span>
+            <div class="fo-body"><div class="fo-name">backup_old.tar.gz</div></div>
+            <div class="fo-stats"><span class="fo-sz">400 MB</span><span class="fo-ratio">&#8595; 55%</span></div>
+          </div>
+          <div class="fo">
+            <span class="fi-ext gz">GZ</span>
+            <div class="fo-body"><div class="fo-name">raw_photos.zip.gz</div></div>
+            <div class="fo-stats"><span class="fo-sz">173 MB</span><span class="fo-ratio">&#8595; 68%</span></div>
+          </div>
+          <div class="fo">
+            <span class="fi-ext gz">GZ</span>
+            <div class="fo-body"><div class="fo-name">dataset.csv.gz</div></div>
+            <div class="fo-stats"><span class="fo-sz">124 MB</span><span class="fo-ratio">&#8595; 41%</span></div>
+          </div>
+          <div class="fo">
+            <span class="fi-ext gz">GZ</span>
+            <div class="fo-body"><div class="fo-name">notes.txt.gz</div></div>
+            <div class="fo-stats"><span class="fo-sz">31 MB</span><span class="fo-ratio">&#8595; 35%</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="pp-footer">
+        <div class="pp-footer-label">Disk Usage</div>
+        <div class="disk-rows">
+          <div class="disk-row">
+            <span class="dr-label">Before</span>
+            <div class="dr-bar"><div class="dr-fill danger" style="width:87%"></div></div>
+            <span class="dr-val danger">87%</span>
+          </div>
+          <div class="disk-row">
+            <span class="dr-label">After</span>
+            <div class="dr-bar"><div class="dr-fill safe" style="width:74%"></div></div>
+            <span class="dr-val safe">74%</span>
+          </div>
+        </div>
+        <div class="pp-footer-stats">
+          <div class="pfs"><span class="pfs-val">174.0 GB</span><span class="pfs-key">Used before</span></div>
+          <div class="pfs"><span class="pfs-val">147.2 GB</span><span class="pfs-key">Used after</span></div>
+          <div class="pfs"><span class="pfs-val pos">+26.8 GB</span><span class="pfs-key">Freed</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="container">
+    <div class="reveal">
+      <p class="sec-ey">Capabilities</p>
+      <h2 class="sec-h">Built to solve the problem,<br>not just describe it.</h2>
+      <p class="sec-sub">Every component is purpose-built: monitoring, prioritisation, compression, metadata, and restoration &mdash; fully integrated.</p>
+    </div>
+    <div class="feat-grid reveal" style="transition-delay:.07s">
+      <div class="feat-card">
+        <div class="feat-ic">&#128225;</div>
+        <h3>Real-time Disk Monitoring</h3>
+        <p>Polls disk usage every 10 seconds via <code>psutil</code>. Triggers compression automatically when available space drops below a configurable threshold (default 85%).</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-ic">&#9878;</div>
+        <h3>Intelligent Prioritisation</h3>
+        <p>Ranks candidate files by last-access time and size. Large files untouched for weeks are compressed first, maximising space recovered per cycle.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-ic">&#128274;</div>
+        <h3>Lossless Compression</h3>
+        <p>Gzip and Zlib are both supported. Every compressed file can be restored byte-for-byte to its original state &mdash; no data is ever discarded.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-ic">&#128451;</div>
+        <h3>Metadata Preservation</h3>
+        <p>Original file paths, access timestamps, and algorithm choice are persisted in a JSON store. Decompression restores files to their exact original locations.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-ic">&#9000;</div>
+        <h3>Graphical Interface</h3>
+        <p>A Tkinter-based GUI provides manual compress and decompress controls, a live compressed-file registry, and a real-time disk usage display.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-ic">&#128203;</div>
+        <h3>Structured Logging</h3>
+        <p>All compression and decompression events are timestamped and written to a log file, providing full auditability of every system action.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DEMO -->
+<section id="demo">
+  <div class="container">
+    <div class="reveal">
+      <p class="sec-ey">Interactive Demo</p>
+      <h2 class="sec-h">Watch it run.</h2>
+      <p class="sec-sub">Press <strong style="color:var(--text);font-weight:600">Run SmartCompress</strong> to simulate a full compression cycle &mdash; disk detection, file prioritisation, and lossless compression, step by step.</p>
+    </div>
+    <div class="demo-wrap reveal" style="transition-delay:.07s">
+      <div class="demo-bar">
+        <div class="pp-dots"><div class="pp-dot r"></div><div class="pp-dot y"></div><div class="pp-dot g"></div></div>
+        <span class="demo-bar-title">Simulation &mdash; SmartCompress FS</span>
+      </div>
+      <div class="demo-body">
+        <!-- Disk -->
+        <div class="dl">
+          <h4>Disk Status</h4>
+          <div class="dv-wrap">
+            <svg class="dv-svg" viewBox="0 0 132 132">
+              <defs>
+                <linearGradient id="dg-danger"><stop offset="0%" stop-color="#f85149"/><stop offset="100%" stop-color="#cca72c"/></linearGradient>
+                <linearGradient id="dg-safe"><stop offset="0%" stop-color="#2f81f7"/><stop offset="100%" stop-color="#3fb950"/></linearGradient>
+              </defs>
+              <circle class="dv-track" cx="66" cy="66" r="56"/>
+              <circle class="dv-fill" id="dring" cx="66" cy="66" r="56" stroke="url(#dg-danger)"/>
+            </svg>
+            <div class="dv-text">
+              <div class="dv-pct" id="dpct" style="color:var(--red)">87%</div>
+              <div class="dv-sub">Used</div>
+            </div>
+          </div>
+          <div class="dv-info"><span id="dused">174.0 GB</span><span>200 GB</span></div>
+          <div class="dv-results" id="dresults">
+            <div class="dv-rlabel">Results</div>
+            <div class="dv-rrow"><span>Before</span><span id="dr-b">--</span></div>
+            <div class="dv-rrow"><span>After</span><span id="dr-a">--</span></div>
+            <div class="dv-rrow pos"><span>Freed</span><span id="dr-s">--</span></div>
+          </div>
+        </div>
+        <!-- Files + log -->
+        <div class="dr">
+          <h4>File Queue</h4>
+          <div class="dfl">
+            <div class="dfr" id="r0"><span class="dfr-name">lecture_recording.mp4</span><span class="dfr-sz">1.2 GB</span><span class="dbadge dbq">Queued</span></div>
+            <div class="dfr" id="r1"><span class="dfr-name">backup_old.tar</span><span class="dfr-sz">890 MB</span><span class="dbadge dbq">Queued</span></div>
+            <div class="dfr" id="r2"><span class="dfr-name">raw_photos_2023.zip</span><span class="dfr-sz">540 MB</span><span class="dbadge dbq">Queued</span></div>
+            <div class="dfr" id="r3"><span class="dfr-name">dataset_export.csv</span><span class="dfr-sz">210 MB</span><span class="dbadge dbq">Queued</span></div>
+            <div class="dfr" id="r4"><span class="dfr-name">project_notes.txt</span><span class="dfr-sz">48 MB</span><span class="dbadge dbq">Queued</span></div>
+          </div>
+          <button class="d-run" id="drun" onclick="runDemo()">&#9654; Run SmartCompress</button>
+          <div class="d-log" id="dlog"><div class="dl-ln" style="color:var(--dim)">Waiting to start...</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="container">
+    <div class="reveal">
+      <p class="sec-ey">Architecture</p>
+      <h2 class="sec-h">Four steps. Fully automatic.</h2>
+      <p class="sec-sub">SmartCompress FS runs as a self-managing loop. Once started, it requires no interaction unless you choose to intervene via the GUI.</p>
+    </div>
+    <div class="how-grid reveal" style="transition-delay:.07s">
+      <div class="how-step">
+        <div class="how-n">01</div>
+        <h3>Monitor</h3>
+        <p>A background loop polls disk usage every 10 seconds via <code>psutil.disk_usage()</code>. The threshold defaults to 85% but is fully configurable.</p>
+      </div>
+      <div class="how-step">
+        <div class="how-n">02</div>
+        <h3>Scan &amp; Rank</h3>
+        <p>When usage exceeds the threshold, candidate files are collected and sorted by last-access time and size. System files are automatically excluded.</p>
+      </div>
+      <div class="how-step">
+        <div class="how-n">03</div>
+        <h3>Compress</h3>
+        <p>Top-ranked files are compressed with Gzip or Zlib. The original file's access and modification timestamps are recorded before compression begins.</p>
+      </div>
+      <div class="how-step">
+        <div class="how-n">04</div>
+        <h3>Store &amp; Restore</h3>
+        <p>Metadata is persisted to <code>compression_metadata.json</code>. Any compressed file can be restored to its exact original path and timestamp at any time.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TECH -->
+<section id="tech">
+  <div class="container">
+    <div class="reveal">
+      <p class="sec-ey">Stack</p>
+      <h2 class="sec-h">Built with Python.<br>No unnecessary dependencies.</h2>
+      <p class="sec-sub">The entire system runs on Python's standard library plus one external package. No frameworks, no build steps, no overhead.</p>
+    </div>
+    <div class="tech-pills reveal" style="transition-delay:.07s">
+      <div class="tpill">Python 3</div>
+      <div class="tpill">Tkinter</div>
+      <div class="tpill">Gzip</div>
+      <div class="tpill">Zlib</div>
+      <div class="tpill">psutil</div>
+      <div class="tpill">json</div>
+      <div class="tpill">logging</div>
+      <div class="tpill">os &nbsp;&middot;&nbsp; shutil</div>
+    </div>
+  </div>
+</section>
+
+<!-- DOWNLOAD -->
+<section id="download">
+  <div class="container">
+    <div class="dl-wrap reveal">
+      <p class="sec-ey" style="text-align:center">Get it</p>
+      <h2 class="sec-h" style="text-align:center">Download SmartCompress FS</h2>
+      <p class="sec-sub" style="text-align:center;margin:0 auto 32px;max-width:420px">Packaged as a standalone Windows executable. No Python installation required. Source available on GitHub.</p>
+      <div class="dl-btns">
+        <a href="https://github.com/YOUR-USERNAME/smartcompress-fs/releases/latest" class="btn-dl" id="dl-exe">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download .exe
+        </a>
+        <a href="https://github.com/YOUR-USERNAME/smartcompress-fs" target="_blank" class="btn-g" style="padding:13px 26px;font-size:.97rem" id="dl-src">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          View Source
+        </a>
+      </div>
+      <p class="dl-note">Requires Windows 10 or 11 &nbsp;&middot;&nbsp; Python 3.8+ for running from source</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>SmartCompress FS &nbsp;&middot;&nbsp; Built with Python</p>
+  <a href="https://github.com/YOUR-USERNAME/smartcompress-fs" id="footer-gh">GitHub</a>
+</footer>
+
+<script>
+// Disk ring init
+(function(){
+  var ring=document.getElementById('dring');
+  var circ=2*Math.PI*56;
+  ring.style.strokeDasharray=circ;
+  window.setRing=function(pct,safe){
+    ring.style.strokeDashoffset=circ*(1-pct/100);
+    ring.style.stroke=safe?'url(#dg-safe)':'url(#dg-danger)';
+  };
+  window.setRing(87,false);
+})();
+
+function updateDisk(pct){
+  var safe=pct<=75;
+  document.getElementById('dpct').textContent=Math.round(pct)+'%';
+  document.getElementById('dpct').style.color=pct>80?'var(--red)':pct>70?'var(--amber)':'var(--green)';
+  document.getElementById('dused').textContent=(200*pct/100).toFixed(1)+' GB';
+  window.setRing(pct,safe);
+}
+
+function addLog(msg,cls){
+  var div=document.getElementById('dlog');
+  var line=document.createElement('div');
+  line.className='dl-ln'+(cls?' '+cls:'');
+  var d=new Date();
+  line.textContent='['+d.getHours()+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0')+'] '+msg;
+  div.appendChild(line);
+  div.scrollTop=div.scrollHeight;
+}
+
+function setBadge(id,type){
+  var row=document.getElementById(id),b=row.querySelector('.dbadge');
+  b.className='dbadge';row.classList.remove('compressing','compressed');
+  if(type==='c'){b.classList.add('dbc');b.textContent='Compressing';row.classList.add('compressing');}
+  else if(type==='d'){b.classList.add('dbd');b.textContent='Done';row.classList.add('compressed');}
+  else{b.classList.add('dbq');b.textContent='Queued';}
+}
+
+var running=false;
+var FILES=[
+  {id:'r0',sz:1.20,ratio:.62},
+  {id:'r1',sz:.89, ratio:.55},
+  {id:'r2',sz:.54, ratio:.68},
+  {id:'r3',sz:.21, ratio:.41},
+  {id:'r4',sz:.048,ratio:.35}
+];
+var NAMES=['lecture_recording.mp4','backup_old.tar','raw_photos_2023.zip','dataset_export.csv','project_notes.txt'];
+
+function sleep(ms){return new Promise(function(r){setTimeout(r,ms);})}
+
+async function runDemo(){
+  if(running)return;
+  running=true;
+  var btn=document.getElementById('drun');
+  btn.disabled=true;btn.textContent='Running...';
+  document.getElementById('dlog').innerHTML='';
+  document.getElementById('dresults').classList.remove('show');
+  FILES.forEach(function(f,i){setBadge(f.id,'q');});
+  updateDisk(87);
+  await sleep(300);
+  addLog('Monitor cycle triggered. Checking disk usage...','dl-info');
+  await sleep(700);
+  addLog('Disk at 87% -- threshold exceeded (85%). Starting compression.','dl-warn');
+  await sleep(600);
+  addLog('Scanning target directory. Ranking candidates by access time and size...','dl-info');
+  await sleep(800);
+  addLog('Queue ready: 5 files, 2.89 GB total.','dl-info');
+  await sleep(400);
+  var pct=87,totalB=FILES.reduce(function(a,f){return a+f.sz;},0),saved=0;
+  for(var i=0;i<FILES.length;i++){
+    var f=FILES[i];
+    await sleep(250);
+    addLog('Compressing '+NAMES[i]+'...','dl-info');
+    setBadge(f.id,'c');
+    await sleep(1000);
+    var s=f.sz*(1-f.ratio);
+    saved+=s;
+    pct=Math.max(pct-(s/200)*100,0);
+    updateDisk(pct);
+    setBadge(f.id,'d');
+    addLog('Done. '+Math.round(f.ratio*100)+'% reduction -- '+(s*1024).toFixed(0)+' MB freed.','dl-ok');
+  }
+  await sleep(500);
+  addLog('Cycle complete. Metadata written to compression_metadata.json.','dl-ok');
+  document.getElementById('dr-b').textContent=totalB.toFixed(2)+' GB';
+  document.getElementById('dr-a').textContent=(totalB-saved).toFixed(2)+' GB';
+  document.getElementById('dr-s').textContent='+'+(saved*1024).toFixed(0)+' MB';
+  document.getElementById('dresults').classList.add('show');
+  btn.textContent='Run Again';btn.disabled=false;running=false;
+}
+
+// Scroll reveal
+var obs=new IntersectionObserver(function(entries){
+  entries.forEach(function(e){if(e.isIntersecting)e.target.classList.add('visible');});
+},{threshold:.1});
+document.querySelectorAll('.reveal').forEach(function(el){obs.observe(el);});
+</script>
+</body>
+</html>

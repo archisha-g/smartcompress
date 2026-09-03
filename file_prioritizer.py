@@ -1,3 +1,12 @@
+"""
+file_prioritizer.py
+-------------------
+Handles file prioritization, logging, and metadata management
+for the SmartCompress FS system.
+
+Prioritizes files by last-access time and size, and records
+compression metadata to a JSON store for reliable restoration.
+"""
 import os
 import json
 import logging
@@ -5,7 +14,7 @@ from datetime import datetime
 from typing import List, Tuple
 
 # --- Configuration ---
-WATCH_DIRECTORY = "/Users/tanishachauhan/Downloads/TestFiles"  
+WATCH_DIRECTORY = os.path.join(os.path.expanduser("~"), "Downloads", "TestFiles")
 LOG_FILE = "smartcompress.log"
 METADATA_FILE = "metadata.json"
 PRIORITY_LIMIT = 10
