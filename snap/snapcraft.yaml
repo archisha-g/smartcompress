@@ -1,0 +1,33 @@
+name: smartcompress
+title: SmartCompress
+base: core24
+version: '1.1.0'
+summary: Compress your least-used files when disk space runs low
+description: |
+  SmartCompress watches your free disk space. When it drops below a
+  threshold you choose, it compresses the least recently used, largest
+  files in a folder you pick, losslessly with gzip.
+
+  Example: smartcompress --watch-dir ~/Downloads --threshold 15
+
+  The snap can only access non-hidden files in your home folder.
+license: MIT
+contact: https://github.com/archisha-g/smartcompress/issues
+issues: https://github.com/archisha-g/smartcompress/issues
+source-code: https://github.com/archisha-g/smartcompress
+website: https://smartcompress-nine.vercel.app/
+grade: stable
+confinement: strict
+
+apps:
+  smartcompress:
+    command: bin/smartcompress
+    plugs:
+      - home
+
+parts:
+  smartcompress:
+    plugin: python
+    source: .
+    stage-packages:
+      - python3-venv

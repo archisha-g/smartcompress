@@ -5,10 +5,14 @@ import time
 import gzip
 import logging
 import argparse
+import sys
 from datetime import datetime
 
 
-LOG_FILE = "smartcompress.log"
+# Inside a snap, write the log to the snap's private folder; otherwise to the current folder.
+LOG_DIR = os.environ.get("SNAP_USER_COMMON", ".")
+LOG_FILE = os.path.join(LOG_DIR, "smartcompress.log")
+SKIP_EXTENSIONS = (".gz", ".zlib", ".log", ".tmp")
 
 
 logging.basicConfig(filename=LOG_FILE, level=logging.INFO, format='%(asctime)s - %(message)s')
@@ -19,8 +23,10 @@ def get_disk_free_percent(path):
 
 def should_compress(path):
     try:
-
-        return os.path.isfile(path) and not path.endswith('.gz')
+        # Never compress our own log, already-compressed files, or logs/temp files
+        if os.path.abspath(path) == os.path.abspath(LOG_FILE):
+            return False
+        return os.path.isfile(path) and not path.endswith(SKIP_EXTENSIONS)
     except Exception as e:
         logging.error(f"Error checking file: {path} - {e}")
         return False
@@ -64,13 +70,13 @@ def monitor_and_compress(watch_dir, disk_path, threshold, interval):
                 logging.info("No eligible files to compress.")
         time.sleep(interval)
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(
         description="Compress the coldest files in a folder when disk space runs low.")
     parser.add_argument("--watch-dir", required=True,
                         help="folder whose files may be compressed")
-    parser.add_argument("--disk", default="/",
-                        help="disk to monitor for free space (default: /)")
+    parser.add_argument("--disk", default=None,
+                        help="path on the disk to monitor (default: the disk holding --watch-dir)")
     parser.add_argument("--threshold", type=float, default=10,
                         help="start compressing below this %% of free space (default: 10)")
     parser.add_argument("--interval", type=int, default=60,
@@ -81,4 +87,15 @@ if __name__ == "__main__":
     if not os.path.isdir(watch_dir):
         parser.error(f"--watch-dir {watch_dir} is not a folder")
 
-    monitor_and_compress(watch_dir, args.disk, args.threshold, args.interval)
+    # By default, watch the disk the folder lives on. Inside a snap, "/" is the
+    # snap's own read-only file system, not the user's disk.
+    disk_path = os.path.expanduser(args.disk) if args.disk else watch_dir
+
+    try:
+        monitor_and_compress(watch_dir, disk_path, args.threshold, args.interval)
+    except KeyboardInterrupt:
+        print("\nStopped.")
+        sys.exit(0)
+
+if __name__ == "__main__":
+    main()

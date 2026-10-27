@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "smartcompress"
+version = "1.1.0"
+description = "Compress your least-used files when disk space runs low"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Archisha Ghanshani" }]
+requires-python = ">=3.8"
+dependencies = ["psutil>=5.9"]
+
+[project.scripts]
+smartcompress = "smartcompress:main"
+
+[tool.setuptools]
+py-modules = ["smartcompress"]

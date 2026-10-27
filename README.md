@@ -56,6 +56,14 @@ Works on Linux, macOS and Windows.
 
 ## Installation
 
+On Ubuntu and other Linux distributions, install the snap:
+
+```bash
+sudo snap install smartcompress
+```
+
+Or run it from source:
+
 ```bash
 git clone https://github.com/archisha-g/smartcompress.git
 cd smartcompress
@@ -70,14 +78,14 @@ pip install -r requirements.txt
 python smartcompress.py --watch-dir ~/Downloads --threshold 15
 ```
 
-This checks free space on `/` every 60 seconds. When less than 15% is free, it
+This checks free space on the disk that holds `~/Downloads` every 60 seconds. When less than 15% is free, it
 compresses up to 10 of the least recently used files in `~/Downloads`.
 
 | Option | Default | What it does |
 | --- | --- | --- |
 | `--watch-dir` | (required) | Folder whose files may be compressed |
 | `--threshold` | `10` | Start compressing when free space (%) drops below this |
-| `--disk` | `/` | Disk to monitor |
+| `--disk` | disk holding `--watch-dir` | Path on the disk to monitor |
 | `--interval` | `60` | Seconds between checks |
 
 Run `python smartcompress.py --help` to see all options. Stop it with `Ctrl+C`.
